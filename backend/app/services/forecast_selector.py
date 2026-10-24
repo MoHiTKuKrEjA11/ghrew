@@ -53,5 +53,6 @@ def day_ahead_points(db: Session, hour: int) -> list[Point]:
         Point(start, generation, published, actuals.get(start))
         for start, (published, generation) in sorted(chosen.items())
     ]
-    _cache[hour] = points
+    if points:
+        _cache[hour] = points
     return points

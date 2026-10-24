@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMeta } from "./api/client";
+import Loading from "./components/Loading";
 import Accuracy from "./pages/Accuracy";
 import Overview from "./pages/Overview";
 
@@ -16,6 +17,7 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setError(null);
     getMeta(decisionHour).then(setMeta).catch((e) => setError(e.message));
   }, [decisionHour]);
 
@@ -48,11 +50,9 @@ export default function App() {
 
       <main>
         {error && <p className="notice error">Could not reach the server: {error}</p>}
-        {tab === "forecast" ? (
-          <Overview meta={meta} decisionHour={decisionHour} />
-        ) : (
-          <Accuracy meta={meta} decisionHour={decisionHour} />
-        )}
+        {!meta && !error && <Loading>Loading data. If the server was asleep, this can take up to a minute.</Loading>}
+        {meta && tab === "forecast" && <Overview meta={meta} decisionHour={decisionHour} />}
+        {meta && tab === "accuracy" && <Accuracy meta={meta} decisionHour={decisionHour} />}
       </main>
 
       <footer>Source: Elexon BMRS (FUELHH actuals, WINDFOR forecasts). Times are UTC.</footer>

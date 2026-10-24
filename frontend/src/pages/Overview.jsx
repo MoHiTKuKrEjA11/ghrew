@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDayForecast } from "../api/client";
 import ForecastChart from "../components/ForecastChart";
+import Loading from "../components/Loading";
 import Stats from "../components/Stats";
 import { gwh, longDay, mw, shiftDay, utcDateTime, utcTime } from "../format";
 
@@ -8,6 +9,7 @@ export default function Overview({ meta, decisionHour }) {
   const [day, setDay] = useState(null);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (meta?.first_day && !day) setDay(meta.first_day);
@@ -17,15 +19,17 @@ export default function Overview({ meta, decisionHour }) {
     if (!day) return;
     let cancelled = false;
     setError(null);
+    setLoading(true);
     getDayForecast(day, decisionHour)
       .then((d) => !cancelled && setData(d))
-      .catch((e) => !cancelled && (setData(null), setError(e.message)));
+      .catch((e) => !cancelled && (setData(null), setError(e.message)))
+      .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
   }, [day, decisionHour]);
 
-  if (!meta?.first_day) return <p className="notice">No data loaded yet. Run the data loader (see README).</p>;
+  if (!meta.first_day) return <p className="notice">No data available. Run the data loader (see README).</p>;
 
   const s = data?.summary;
   return (
@@ -52,8 +56,9 @@ export default function Overview({ meta, decisionHour }) {
       </div>
 
       {error && <p className="notice error">{error}</p>}
+      {loading && <Loading>Loading forecast</Loading>}
 
-      {data && (
+      {!loading && data && (
         <>
           <h2>{longDay(data.day)}</h2>
           <p className="lede">

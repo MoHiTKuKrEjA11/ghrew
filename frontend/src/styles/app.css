@@ -208,7 +208,7 @@ section {
   border-top: 1px solid var(--grid);
 }
 
-section + section {
+section+section {
   margin-top: 32px;
 }
 
@@ -222,6 +222,36 @@ section + section {
 .notice {
   margin-top: 24px;
   color: var(--muted);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  color: var(--muted);
+}
+
+.spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--grid);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
 }
 
 .notice.error {

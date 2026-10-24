@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAccuracy } from "../api/client";
 import { DailyChart, HistogramChart, HourChart } from "../components/AccuracyCharts";
+import Loading from "../components/Loading";
 import Stats from "../components/Stats";
 import { mw, pct } from "../format";
 
@@ -8,13 +9,16 @@ export default function Accuracy({ meta, decisionHour }) {
   const [range, setRange] = useState({ start: "", end: "" });
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setError(null);
+    setLoading(true);
     getAccuracy(decisionHour, range.start, range.end)
       .then((d) => !cancelled && setData(d))
-      .catch((e) => !cancelled && (setData(null), setError(e.message)));
+      .catch((e) => !cancelled && (setData(null), setError(e.message)))
+      .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
@@ -22,6 +26,8 @@ export default function Accuracy({ meta, decisionHour }) {
 
   const set = (key) => (e) => setRange((r) => ({ ...r, [key]: e.target.value }));
   const s = data?.summary;
+
+  if (!meta.first_day) return <p className="notice">No data available. Run the data loader (see README).</p>;
 
   return (
     <>
@@ -38,8 +44,9 @@ export default function Accuracy({ meta, decisionHour }) {
       </div>
 
       {error && <p className="notice error">{error}</p>}
+      {loading && <Loading>Loading accuracy figures</Loading>}
 
-      {data && (
+      {!loading && data && (
         <>
           <h2>How wrong were the forecasts?</h2>
           <p className="lede">
